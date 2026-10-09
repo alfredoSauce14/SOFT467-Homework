@@ -1,0 +1,1 @@
+To run the tester, run the command: "python3 dd.py input_file oracle_script [-log]". With input_file being replaced with the file being tested on, oracle_script being replaced with the file containing the test script, and [-log] being an optional argument to include so that the program sends useful prints for debugging that would mess up the JSON.
