@@ -41,27 +41,37 @@ def output_generation():
 def generate_chromosome():
    chromosome = {}
    i = 0
-   length = random.randrange(0,10)
+   length = random.randint(0,10)
    while i < length:
       k = 0
-      key_length = random.randrange(1,1000)
+      key_length = random.randint(1,100)
       key = ""
       while k < key_length:
-         key + random.choice(string.printable)
-      value_type = random.randrange(1,2)
+         key += random.choice(string.printable)
+         k += 1
+      value_type = random.randint(1, 2)
+      log(f'Value type at {i}: {value_type}\n')
       if value_type == 1:
          v = 0
-         value_length = random.randrange(1,1000)
+         value_length = random.randint(1,100)
          value = ""
          while v < value_length:
-            value + random.choice(string.printable)
+            value += random.choice(string.printable)
+            v += 1
       else:
-         value = random.randrange(-10000, 10000)
-      chromosome[key] = value             
+         value = random.randint(-10000, 10000)
+      chromosome[key] = value
+      log(f'{i}th part of Chromosome: {chromosome[key]}\n')
+      log(f'Chromosome at {i}: {chromosome}\n')
+      i += 1          
    return chromosome
 
 def create_population(size):
-   return
+   population = []
+   i = 0
+   while i < size:
+      population.append(generate_chromosome())
+   return population
 
 def crossover_chromosomes():
    return
@@ -98,5 +108,11 @@ if __name__ == "__main__":
   input_file = sys.argv[1]
 
   log(f'input_file: {input_file}')
+
+
+  #Tests:
+  test_chromosome = generate_chromosome()
+  log(f'Test Chromosome: {test_chromosome}\n')
+
 
   log(f'Time: {time.perf_counter() - start_time}')
