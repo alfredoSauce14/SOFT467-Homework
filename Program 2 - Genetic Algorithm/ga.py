@@ -24,9 +24,6 @@ def read_input(path):
         contents = c.read()
     return contents
 
-def chromosome(strings, values, length):
-   return
-
 def output_generation():
     output = {}
     output['done'] = False
@@ -44,7 +41,7 @@ def generate_chromosome():
    length = random.randint(0,10)
    while i < length:
       k = 0
-      key_length = random.randint(1,100)
+      key_length = random.randint(1,10)
       key = ""
       while k < key_length:
          key += random.choice(string.printable)
@@ -53,7 +50,7 @@ def generate_chromosome():
       log(f'Value type at {i}: {value_type}\n')
       if value_type == 1:
          v = 0
-         value_length = random.randint(1,100)
+         value_length = random.randint(1,10)
          value = ""
          while v < value_length:
             value += random.choice(string.printable)
@@ -71,17 +68,38 @@ def create_population(size):
    i = 0
    while i < size:
       population.append(generate_chromosome())
+      i += 1
    return population
 
-def crossover_chromosomes():
-   return
+def crossover_chromosomes(parent1, parent2):
+   offspring = {}
+   for key in set(parent1) | set(parent2):
+      parent1_key = key in parent1
+      parent2_key = key in parent2
+      if parent1_key and parent2_key:
+         value1 = parent1[key]
+         value2 = parent2[key]
+         if isinstance(value1, str) and isinstance(value2, str):
+            split1 = random.randint(0, len(parent1))
+            split2 = random.randint(0, len(parent2))
+            offspring[key] = value1[:split1] + value2[split2:]
+            offspring[key] = (offspring[key])[:1000]
+         else:
+            offspring[key] = random.choice([value1, value2])
+      else:
+         if random.random() < 0.5:
+            if parent1_key:
+               offspring[key] = parent1[key]
+            else:
+               offspring[key] = parent2[key]
+   return offspring
 
 def mutate_chromosomes():
-  # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
-  # tournament style (select random to be in tournament and take best of those)
    return
 
 def fitness():
+    # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
+    # tournament style (select random to be in tournament and take best of those)
     return
 
 def evolve_match():
@@ -111,8 +129,14 @@ if __name__ == "__main__":
 
 
   #Tests:
-  test_chromosome = generate_chromosome()
-  log(f'Test Chromosome: {test_chromosome}\n')
+  # test_chromosome = generate_chromosome()
+  # log(f'Test Chromosome: {test_chromosome}\n')
 
+  parent_1 = generate_chromosome()
+  parent_2 = generate_chromosome()
+  offspring = crossover_chromosomes(parent_1, parent_2)
+  log(f'parent_1: {parent_1}')
+  log(f'parent_2: {parent_2}')
+  log(f'offspring_1: {offspring}')
 
   log(f'Time: {time.perf_counter() - start_time}')
