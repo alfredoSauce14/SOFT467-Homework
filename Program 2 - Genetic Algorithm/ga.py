@@ -53,7 +53,6 @@ def generate_gene():
    else:
      value = random.randint(-10000, 10000)
    return key, value
-   
 
 def generate_chromosome():
    chromosome = {}
@@ -61,15 +60,6 @@ def generate_chromosome():
    length = random.randint(0,10)
    while i < length:
       key, value = generate_gene()
-      # key_length = random.randint(1,10)
-      # key = random_printable_string(key_length)
-      # value_type = random.randint(1, 2)
-      # log(f'Value type at {i}: {value_type}\n')
-      # if value_type == 1:
-      #    value_length = random.randint(1,10)
-      #    value = random_printable_string(value_length)
-      # else:
-      #    value = random.randint(-10000, 10000)
       chromosome[key] = value
       log(f'{i}th part of Chromosome: {chromosome[key]}\n')
       log(f'Chromosome at {i}: {chromosome}\n')
@@ -117,16 +107,20 @@ def mutate_chromosome(chromosome):
    mutated = dict(chromosome)
    mutation_probability = 1.0 / len(mutated)
 
-   # Add key
-  #  if random.random() < mutation_probability:
-      
-      
-      
+   # Add gene
+   if random.random() < mutation_probability:
+      new_key, new_value = generate_gene()
+      mutated[new_key] = new_value
+
+   # Delete gene
+   if random.random() < mutation_probability and mutated:
+      del mutated[random.choice(list(mutated))]
+
   #  mutated = chromosome[:]
   #  mutation_probability = 1.0 / len(mutated)
   #  for key in set(mutated):
   #     if random.random() < 
-   return
+   return mutated
 
 def fitness():
     # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
@@ -160,14 +154,18 @@ if __name__ == "__main__":
 
 
   #Tests:
-  # test_chromosome = generate_chromosome()
-  # log(f'Test Chromosome: {test_chromosome}\n')
+  test_chromosome = generate_chromosome()
+  log(f'Test Chromosome: {test_chromosome}\n')
 
-  parent_1 = generate_chromosome()
-  parent_2 = generate_chromosome()
-  offspring = crossover_chromosomes(parent_1, parent_2)
-  log(f'parent_1: {parent_1}')
-  log(f'parent_2: {parent_2}')
-  log(f'offspring_1: {offspring}')
+  # parent_1 = generate_chromosome()
+  # parent_2 = generate_chromosome()
+  # offspring = crossover_chromosomes(parent_1, parent_2)
+  # log(f'parent_1: {parent_1}')
+  # log(f'parent_2: {parent_2}')
+  # log(f'offspring_1: {offspring}')
+
+  mutated_chromosome = mutate_chromosome(test_chromosome)
+  log(f'Mutated Chromosome: {mutated_chromosome}')
+
 
   log(f'Time: {time.perf_counter() - start_time}')
