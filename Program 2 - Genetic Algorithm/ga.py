@@ -2,6 +2,8 @@ import sys
 import subprocess
 import time
 import json
+import random
+import string
 
 # JSON info:
 # Keys: always strings
@@ -22,6 +24,9 @@ def read_input(path):
         contents = c.read()
     return contents
 
+def chromosome(strings, values, length):
+   return
+
 def output_generation():
     output = {}
     output['done'] = False
@@ -33,8 +38,44 @@ def output_generation():
       output['best_individual'] = json.dumps()
     print(json.dumps(output), flush=True)
 
+def generate_chromosome():
+   chromosome = {}
+   i = 0
+   length = random.randrange(0,10)
+   while i < length:
+      k = 0
+      key_length = random.randrange(1,1000)
+      key = ""
+      while k < key_length:
+         key + random.choice(string.printable)
+      value_type = random.randrange(1,2)
+      if value_type == 1:
+         v = 0
+         value_length = random.randrange(1,1000)
+         value = ""
+         while v < value_length:
+            value + random.choice(string.printable)
+      else:
+         value = random.randrange(-10000, 10000)
+      chromosome[key] = value             
+   return chromosome
+
+def create_population(size):
+   return
+
+def crossover_chromosomes():
+   return
+
+def mutate_chromosomes():
+  # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
+  # tournament style (select random to be in tournament and take best of those)
+   return
+
 def fitness():
     return
+
+def evolve_match():
+   return
 
 
 
