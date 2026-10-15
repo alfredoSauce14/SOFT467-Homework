@@ -24,14 +24,14 @@ def read_input(path):
         contents = c.read()
     return contents
 
-def output_generation():
+def output_generation(done, generation, evaluated, avg_fitness, best_fitness):
     output = {}
-    output['done'] = False
-    output['generation'] = 0
-    output['evaluated'] = 0
-    output['avg_fitness'] = 0
-    output['best_fitness'] = 0
-    if (output['done'] == True) or (output['generation'] == 0):
+    output['done'] = done
+    output['generation'] = generation
+    output['evaluated'] = evaluated
+    output['avg_fitness'] = avg_fitness
+    output['best_fitness'] = best_fitness
+    if (done == True) or (generation == 0):
       output['best_individual'] = json.dumps()
     print(json.dumps(output), flush=True)
 
@@ -44,11 +44,11 @@ def random_printable_string(length):
    return s
    
 def generate_gene():
-   key_length = random.randint(1,10)
+   key_length = random.randint(0,10)
    key = random_printable_string(key_length)
    value_type = random.choice(['string', 'integer'])
    if value_type == 'string':
-     value_length = random.randint(1,10)
+     value_length = random.randint(0,10)
      value = random_printable_string(value_length)
    else:
      value = random.randint(-10000, 10000)
@@ -83,8 +83,8 @@ def crossover_chromosomes(parent1, parent2):
          value1 = parent1[key]
          value2 = parent2[key]
          if isinstance(value1, str) and isinstance(value2, str):
-            split1 = random.randint(0, len(parent1))
-            split2 = random.randint(0, len(parent2))
+            split1 = random.randint(0, len(value1))
+            split2 = random.randint(0, len(value2))
             offspring[key] = value1[:split1] + value2[split2:]
             offspring[key] = (offspring[key])[:1000]
          else:
@@ -97,24 +97,62 @@ def crossover_chromosomes(parent1, parent2):
                offspring[key] = parent2[key]
    return offspring
 
-def mutate_string():
-   return
+def mutate_string(s):
+   string_mutation_type = random.choice(['substitution', 'insertion', 'deletion'])
+   if not s:
+      string_mutation_type = 'insertion'
+   
+   if string_mutation_type == 'substitution':
+      mutation_pos = random.randrange(len(s))
+      s = s[:mutation_pos] + random.choice(string.printable) + s[mutation_pos+1:]
 
-def mutate_integer():
-   return
+   if string_mutation_type == 'insertion':
+      mutation_pos = random.randint(0, len(s))
+      s = s[:mutation_pos] + random.choice(string.printable) + s[mutation_pos:]
+
+   if string_mutation_type == 'deletion':
+      mutation_pos = random.randrange(len(s))
+      s = s[:mutation_pos] + s[mutation_pos+1:]
+      
+   return s[:1000]
+
+def mutate_integer(n):
+   n += random.randint(-10, 10)
+   return max(-10000, min(10000, n))
 
 def mutate_chromosome(chromosome):
    mutated = dict(chromosome)
-   mutation_probability = 1.0 / len(mutated)
+   if len(mutated) > 1:
+    mutation_probability = 1.0 / len(mutated)
+   else: mutation_probability = 0.5
 
    # Add gene
-   if random.random() < mutation_probability:
+   if random.random() < 0.3:
       new_key, new_value = generate_gene()
       mutated[new_key] = new_value
 
    # Delete gene
-   if random.random() < mutation_probability and mutated:
+   if random.random() < 0.3 and mutated:
       del mutated[random.choice(list(mutated))]
+
+   # Gene mutations
+   for key in list(mutated):
+      if random.random() < mutation_probability:
+         mutation_type = random.choice(['key', 'value'])
+         value = mutated[key]
+
+         if mutation_type == 'key':
+            new_key = mutate_string(key)
+            if new_key not in mutated:
+               del mutated[key]
+               mutated[new_key] = value
+
+         if mutation_type == 'value':
+            if isinstance(value, str):
+               mutated[key] = mutate_string(value)
+            else:
+               mutated[key] = mutate_integer(value)
+         
 
   #  mutated = chromosome[:]
   #  mutation_probability = 1.0 / len(mutated)
@@ -142,7 +180,7 @@ if __name__ == "__main__":
     if sys.argv[2] == "-log":
       logging = True
     else:
-      sys.exit("usage: dd.py input_file oracle_script [-log]")
+      sys.exit("usage: dd.py input_file [-log]")
   else:
     logging = False
 
