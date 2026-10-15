@@ -35,28 +35,41 @@ def output_generation():
       output['best_individual'] = json.dumps()
     print(json.dumps(output), flush=True)
 
+def random_printable_string(length):
+   s = ""
+   i = 0
+   while i < length:
+       s += random.choice(string.printable)
+       i += 1
+   return s
+   
+def generate_gene():
+   key_length = random.randint(1,10)
+   key = random_printable_string(key_length)
+   value_type = random.choice(['string', 'integer'])
+   if value_type == 'string':
+     value_length = random.randint(1,10)
+     value = random_printable_string(value_length)
+   else:
+     value = random.randint(-10000, 10000)
+   return key, value
+   
+
 def generate_chromosome():
    chromosome = {}
    i = 0
    length = random.randint(0,10)
    while i < length:
-      k = 0
-      key_length = random.randint(1,10)
-      key = ""
-      while k < key_length:
-         key += random.choice(string.printable)
-         k += 1
-      value_type = random.randint(1, 2)
-      log(f'Value type at {i}: {value_type}\n')
-      if value_type == 1:
-         v = 0
-         value_length = random.randint(1,10)
-         value = ""
-         while v < value_length:
-            value += random.choice(string.printable)
-            v += 1
-      else:
-         value = random.randint(-10000, 10000)
+      key, value = generate_gene()
+      # key_length = random.randint(1,10)
+      # key = random_printable_string(key_length)
+      # value_type = random.randint(1, 2)
+      # log(f'Value type at {i}: {value_type}\n')
+      # if value_type == 1:
+      #    value_length = random.randint(1,10)
+      #    value = random_printable_string(value_length)
+      # else:
+      #    value = random.randint(-10000, 10000)
       chromosome[key] = value
       log(f'{i}th part of Chromosome: {chromosome[key]}\n')
       log(f'Chromosome at {i}: {chromosome}\n')
@@ -94,7 +107,25 @@ def crossover_chromosomes(parent1, parent2):
                offspring[key] = parent2[key]
    return offspring
 
-def mutate_chromosomes():
+def mutate_string():
+   return
+
+def mutate_integer():
+   return
+
+def mutate_chromosome(chromosome):
+   mutated = dict(chromosome)
+   mutation_probability = 1.0 / len(mutated)
+
+   # Add key
+  #  if random.random() < mutation_probability:
+      
+      
+      
+  #  mutated = chromosome[:]
+  #  mutation_probability = 1.0 / len(mutated)
+  #  for key in set(mutated):
+  #     if random.random() < 
    return
 
 def fitness():
