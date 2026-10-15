@@ -117,7 +117,17 @@ def mutate_string(s):
    return s[:1000]
 
 def mutate_integer(n):
-   n += random.randint(-10, 10)
+   integer_mutation_type = random.choice(['small nudge', 'small nudge', 'large nudge', 'random reset'])
+   
+   if integer_mutation_type == 'small nudge':
+      n += random.randint(-10, 10)
+
+   if integer_mutation_type == 'large nudge':
+       n += random.randint(-100, 100)
+
+   if integer_mutation_type == 'random reset':
+      n = random.randint(-10000, 10000)
+
    return max(-10000, min(10000, n))
 
 def mutate_chromosome(chromosome):
@@ -129,7 +139,8 @@ def mutate_chromosome(chromosome):
    # Add gene
    if random.random() < 0.3:
       new_key, new_value = generate_gene()
-      mutated[new_key] = new_value
+      if new_key not in mutated:
+        mutated[new_key] = new_value
 
    # Delete gene
    if random.random() < 0.3 and mutated:
