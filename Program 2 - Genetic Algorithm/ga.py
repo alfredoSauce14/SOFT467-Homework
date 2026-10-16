@@ -3,6 +3,7 @@ import time
 import json
 import random
 import string
+import math
 from rapidfuzz.distance import Levenshtein
 
 def log(message):
@@ -166,33 +167,63 @@ def find_fitness(chromosome, target_file):
       with open(target_file) as f:
          find_fitness.target = json.loads(f.read())
    target = find_fitness.target
-   log(f'Target: {target}')
 
    fitness = 0
 
-   keys_not_in_chromosome = []
-   keys_not_in_target = []
+   missing_keys = []
+   extra_keys = []
    keys_in_both = []
 
    for key in set(chromosome) | set(target):
       if key not in chromosome:
-         keys_not_in_chromosome.append(key)
+         missing_keys.append(key)
       elif key not in target:
-         keys_not_in_target.append(key)
+         extra_keys.append(key)
       else:
          keys_in_both.append(key)
 
-   fitness += (abs(len(keys_not_in_chromosome) - len(keys_not_in_target)) * 1000)
+   fitness += (abs(len(missing_keys) - len(extra_keys)) * 1000)
 
-   for key in keys_not_in_chromosome:
-      return fitness
+   paired_keys = []
+
+   if missing_keys and extra_keys:
+      for chromosome_key in extra_keys:
+          lowest_levenshtein_distance = math.inf
+          for target_key in missing_keys:
+             levenshtein_distance = Levenshtein.distance(target_key, chromosome_key)
+             if levenshtein_distance < lowest_levenshtein_distance:
+                lowest_levenshtein_distance = levenshtein_distance
+                paired_key = target_key
+          fitness += lowest_levenshtein_distance
+          paired_keys.append((chromosome_key, paired_key))
+
+   for key in keys_in_both:
+      paired_keys.append((key, key))
+
+   for chromosome_key, target_key in paired_keys:
+      chromosome_value = chromosome[chromosome_key]
+      target_value = target[target_key]
+      distance = 0
+      if isinstance(chromosome_value, str) and isinstance(target_value, str):
+          distance = Levenshtein.distance(target_value, chromosome_value)
+      elif isinstance(chromosome_value, str) or isinstance(target_value, str):
+          distance = 1000
+      else:
+          distance = math.ceil(abs(chromosome_value - target_value) / 30)
+      fitness += distance
+
+  #  for key in keys_in_both:
+  #     chromosome_value = chromosome[key]
+  #     target_value = target[key]
+  #     distance = 0
+  #     if isinstance(chromosome_value, str) and isinstance(target_value, str):
+  #        distance = Levenshtein.distance(target_value, chromosome_value)
+  #     elif isinstance(chromosome_value, str) or isinstance(target_value, str):
+  #        distance = 1000
+  #     else:
+  #        distance = abs(chromosome_value - target_value)
+  #     fitness += distance
       
-    
-      # chromosome_key = key in chromosome
-      # target_key = key in target
-      # if not chromosome_key or not target_key:
-      #    fitness += 1000
-
    return fitness
 
 def evolve_match():
@@ -238,9 +269,18 @@ if __name__ == "__main__":
   # mutated_offspring = mutate_chromosome(offspring)
   # log(f'Mutated Offspring: {mutated_offspring}')
 
-  fitness = find_fitness(test_chromosome, target_file)
-  log(f'Test Fitness: {fitness}')
+  # fitness = find_fitness(test_chromosome, target_file)
+  # log(f'Test Fitness: {fitness}')
 
-  print(Levenshtein.distance('named', 'nam'))
+  test_chromosome_1 = {'nam': 'Robt', 'age': 78}
+  test_chromosome_2 = {'binu': 'Barukd', 'age': 21, 'city': 'Lincoln'}
+  test_chromosome_3 = {'name': 'Robert', 'age': 21, 'city': 'Lincoln'}
+
+  fitness_1 = find_fitness(test_chromosome_1, target_file)
+  log(f'Test Fitness 1: {fitness_1}')
+  fitness_2 = find_fitness(test_chromosome_2, target_file)
+  log(f'Test Fitness 2: {fitness_2}')
+  fitness_3 = find_fitness(test_chromosome_3, target_file)
+  log(f'Test Fitness 3: {fitness_3}')
 
   log(f'Time: {time.perf_counter() - start_time}')
