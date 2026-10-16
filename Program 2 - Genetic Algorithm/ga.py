@@ -233,6 +233,7 @@ def evolve_match(target_file):
       chromosome_fitness_pairs = []
       total_fitness = 0
       best_fitness = math.inf
+      elite_chromosomes = []
 
       for chromosome in population:
           cache_key = json.dumps(chromosome, sort_keys=True)
@@ -248,8 +249,16 @@ def evolve_match(target_file):
           if fitness < best_fitness:
              best_fitness = fitness
              best_individual = chromosome
+
+          chromosome_fitness_pair = (chromosome, fitness)
+
+          if len(elite_chromosomes) < 5:
+             elite_chromosomes.append(chromosome_fitness_pair)
+          elif fitness < elite_chromosomes[4][1]:
+             elite_chromosomes[4] = chromosome_fitness_pair
+             elite_chromosomes.sort(key=lambda x: x[1])
           
-          chromosome_fitness_pairs.append((chromosome, fitness))
+          chromosome_fitness_pairs.append(chromosome_fitness_pair)
 
       evaluated = len(fitness_cache)
       avg_fitness = total_fitness / population_size
@@ -274,7 +283,7 @@ def evolve_match(target_file):
 
       offsprings = []
       o = 0
-      while o < (population_size-1):
+      while o < (population_size-5):
          parent1 = random.choice(chosen_parents)
          parent2 = random.choice(chosen_parents)
          offspring = crossover_chromosomes(parent1, parent2)
@@ -287,7 +296,8 @@ def evolve_match(target_file):
          mutated_offsprings.append(mutated)
 
       population = mutated_offsprings
-      population.append(best_individual)     
+      for elite in elite_chromosomes:
+        population.append(elite[0])     
 
 
 if __name__ == "__main__":
