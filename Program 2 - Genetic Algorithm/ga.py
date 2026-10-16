@@ -124,13 +124,13 @@ def mutate_chromosome(chromosome):
    else: mutation_probability = 0.5
 
    # Add gene
-   if random.random() < 0.3:
+   if random.random() < 0.1  :
       new_key, new_value = generate_gene()
       if new_key not in mutated:
         mutated[new_key] = new_value
 
    # Delete gene
-   if random.random() < 0.3 and mutated:
+   if random.random() < 0.1 and mutated:
       del mutated[random.choice(list(mutated))]
 
    # Gene mutations
@@ -271,15 +271,6 @@ def evolve_match(target_file):
       chosen_parents = []
       for attendee in tournament_attendees[:(population_size // 4)]:
          chosen_parents.append(attendee[0])
-
-      # tournament_attendees = random.choices(chromosome_fitness_pairs, k=(population_size // 2))
-      # chosen_parents = []
-      # total_tournament_fitness = 0
-      # for attendee in tournament_attendees: total_tournament_fitness += attendee[1]
-      # avg_tournament_fitness = total_tournament_fitness / (population_size / 2)
-      # for attendee in tournament_attendees:
-      #    if attendee[1] <= avg_tournament_fitness:
-      #       chosen_parents.append(attendee[0])
 
       offsprings = []
       o = 0
