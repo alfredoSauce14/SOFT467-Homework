@@ -133,7 +133,7 @@ def mutate_chromosome(chromosome):
    # Gene mutations
    for key in list(mutated):
       if random.random() < mutation_probability:
-         mutation_type = random.choice(['key', 'value'])
+         mutation_type = random.choice(['key', 'key', 'value', 'value', 'switch_value_type'])
          value = mutated[key]
 
          if mutation_type == 'key':
@@ -147,6 +147,13 @@ def mutate_chromosome(chromosome):
                mutated[key] = mutate_string(value)
             else:
                mutated[key] = mutate_integer(value)
+
+         if mutation_type == 'switch_value_type':
+            if isinstance(value, str):
+               mutated[key] = random.randint(-10000, 10000)
+            else:
+               value_length = random.randint(0, 10)
+               mutated[key] = random_printable_string(value_length)
   
    return mutated
 
@@ -175,17 +182,33 @@ def find_fitness(chromosome, target_file):
    fitness += (abs(len(missing_keys) - len(extra_keys)) * 1000)
 
    paired_keys = []
+   paired_keys_candidates = []
 
-   if missing_keys and extra_keys:
-      for chromosome_key in extra_keys:
-          lowest_levenshtein_distance = math.inf
-          for target_key in missing_keys:
-             levenshtein_distance = Levenshtein.distance(target_key, chromosome_key)
-             if levenshtein_distance < lowest_levenshtein_distance:
-                lowest_levenshtein_distance = levenshtein_distance
-                paired_key = target_key
-          fitness += lowest_levenshtein_distance
-          paired_keys.append((chromosome_key, paired_key))
+   for chromosome_key in extra_keys:
+      for target_key in missing_keys:
+         paired_keys_candidates.append((Levenshtein.distance(target_key, chromosome_key), chromosome_key, target_key))
+   paired_keys_candidates.sort()
+
+   used_chromosome_keys = set()
+   used_target_keys = set()
+   
+   for distance, chromosome_key, target_key in paired_keys_candidates:
+      if chromosome_key not in used_chromosome_keys and target_key not in used_target_keys:
+        used_chromosome_keys.add(chromosome_key)
+        used_target_keys.add(target_key)
+        fitness += distance
+        paired_keys.append((chromosome_key, target_key))
+
+  #  if missing_keys and extra_keys:
+  #     for chromosome_key in extra_keys:
+  #         lowest_levenshtein_distance = math.inf
+  #         for target_key in missing_keys:
+  #            levenshtein_distance = Levenshtein.distance(target_key, chromosome_key)
+  #            if levenshtein_distance < lowest_levenshtein_distance:
+  #               lowest_levenshtein_distance = levenshtein_distance
+  #               paired_key = target_key
+  #         fitness += lowest_levenshtein_distance
+  #         paired_keys.append((chromosome_key, paired_key))
 
    for key in keys_in_both:
       paired_keys.append((key, key))
@@ -240,16 +263,19 @@ def evolve_match(target_file):
       evaluated = len(fitness_cache)
       avg_fitness = total_fitness / population_size
 
-      if (time.perf_counter() - start_time) > 180:
+      if (time.perf_counter() - start_time) > 170:
         done = True
       
       if (generation % 50) == 0 or done:
         output_generation(done, generation, evaluated, avg_fitness, best_fitness, best_individual)
 
+      if done:
+         break
+
       generation += 1
 
       # Chromosome crossover
-      tournament_attendees = random.choices(chromosome_fitness_pairs, k=((population_size * 3) // 2))
+      tournament_attendees = random.choices(chromosome_fitness_pairs, k=(population_size // 2))
       chosen_parents = []
       total_tournament_fitness = 0
       for attendee in tournament_attendees: total_tournament_fitness += attendee[1]
