@@ -199,17 +199,6 @@ def find_fitness(chromosome, target_file):
         fitness += distance
         paired_keys.append((chromosome_key, target_key))
 
-  #  if missing_keys and extra_keys:
-  #     for chromosome_key in extra_keys:
-  #         lowest_levenshtein_distance = math.inf
-  #         for target_key in missing_keys:
-  #            levenshtein_distance = Levenshtein.distance(target_key, chromosome_key)
-  #            if levenshtein_distance < lowest_levenshtein_distance:
-  #               lowest_levenshtein_distance = levenshtein_distance
-  #               paired_key = target_key
-  #         fitness += lowest_levenshtein_distance
-  #         paired_keys.append((chromosome_key, paired_key))
-
    for key in keys_in_both:
       paired_keys.append((key, key))
 
@@ -243,11 +232,10 @@ def evolve_match(target_file):
       best_fitness = math.inf
 
       for chromosome in population:
-          fitness = find_fitness(chromosome, target_file)
-
           cache_key = json.dumps(chromosome, sort_keys=True)
           if cache_key not in fitness_cache:
-            fitness_cache[cache_key] = fitness
+            fitness_cache[cache_key] = find_fitness(chromosome, target_file)
+          fitness = fitness_cache[cache_key]
           
           total_fitness += fitness
           
