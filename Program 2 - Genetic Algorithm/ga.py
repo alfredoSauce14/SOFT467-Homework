@@ -1,28 +1,13 @@
 import sys
-import subprocess
 import time
 import json
 import random
 import string
-
-# JSON info:
-# Keys: always strings
-# Values:
-#   - Strings
-#     - Any length but can assume < 1,000 characters
-#     - Can include any printable character
-#   - Integers
-#     - Can be positive or negative
-#     - Bound to the range [-10,000, 10,000]
+from rapidfuzz.distance import Levenshtein
 
 def log(message):
     if logging:
         print(message, file=sys.stderr)
-
-def read_input(path):
-    with open(path) as c:
-        contents = c.read()
-    return contents
 
 def output_generation(done, generation, evaluated, avg_fitness, best_fitness):
     output = {}
@@ -61,8 +46,6 @@ def generate_chromosome():
    while i < length:
       key, value = generate_gene()
       chromosome[key] = value
-      log(f'{i}th part of Chromosome: {chromosome[key]}\n')
-      log(f'Chromosome at {i}: {chromosome}\n')
       i += 1          
    return chromosome
 
@@ -171,12 +154,50 @@ def mutate_chromosome(chromosome):
   #     if random.random() < 
    return mutated
 
-def fitness():
-    # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
-    # tournament style (select random to be in tournament and take best of those)
-    return
+# def strings_fitness(s):
+#    return
+
+# def integers_fitness(n):
+#    return
+
+def find_fitness(chromosome, target_file):
+   # Only reads target file on the first call and then caches the target
+   if not hasattr(find_fitness, "target"):
+      with open(target_file) as f:
+         find_fitness.target = json.loads(f.read())
+   target = find_fitness.target
+   log(f'Target: {target}')
+
+   fitness = 0
+
+   keys_not_in_chromosome = []
+   keys_not_in_target = []
+   keys_in_both = []
+
+   for key in set(chromosome) | set(target):
+      if key not in chromosome:
+         keys_not_in_chromosome.append(key)
+      elif key not in target:
+         keys_not_in_target.append(key)
+      else:
+         keys_in_both.append(key)
+
+   fitness += (abs(len(keys_not_in_chromosome) - len(keys_not_in_target)) * 1000)
+
+   for key in keys_not_in_chromosome:
+      return fitness
+      
+    
+      # chromosome_key = key in chromosome
+      # target_key = key in target
+      # if not chromosome_key or not target_key:
+      #    fitness += 1000
+
+   return fitness
 
 def evolve_match():
+   # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
+   # tournament style (select random to be in tournament and take best of those)
    return
 
 
@@ -185,36 +206,41 @@ if __name__ == "__main__":
   start_time = time.perf_counter() 
 
   if len(sys.argv) < 2 or len(sys.argv) > 3:
-    sys.exit("usage: ga.py input_file [-log]")
+    sys.exit("usage: ga.py target_file [-log]")
 
   if len(sys.argv) == 3:
     if sys.argv[2] == "-log":
       logging = True
     else:
-      sys.exit("usage: dd.py input_file [-log]")
+      sys.exit("usage: dd.py target_file [-log]")
   else:
     logging = False
 
   log(f'logging: {logging}')
 
-  input_file = sys.argv[1]
-
-  log(f'input_file: {input_file}')
-
+  target_file = sys.argv[1]
+  log(f'target_file: {target_file}')
 
   #Tests:
   test_chromosome = generate_chromosome()
   log(f'Test Chromosome: {test_chromosome}\n')
+
+  # mutated_chromosome = mutate_chromosome(test_chromosome)
+  # log(f'Mutated Chromosome: {mutated_chromosome}')
 
   # parent_1 = generate_chromosome()
   # parent_2 = generate_chromosome()
   # offspring = crossover_chromosomes(parent_1, parent_2)
   # log(f'parent_1: {parent_1}')
   # log(f'parent_2: {parent_2}')
-  # log(f'offspring_1: {offspring}')
+  # log(f'offspring: {offspring}')
 
-  mutated_chromosome = mutate_chromosome(test_chromosome)
-  log(f'Mutated Chromosome: {mutated_chromosome}')
+  # mutated_offspring = mutate_chromosome(offspring)
+  # log(f'Mutated Offspring: {mutated_offspring}')
 
+  fitness = find_fitness(test_chromosome, target_file)
+  log(f'Test Fitness: {fitness}')
+
+  print(Levenshtein.distance('named', 'nam'))
 
   log(f'Time: {time.perf_counter() - start_time}')
