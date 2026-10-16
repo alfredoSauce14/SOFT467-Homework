@@ -67,9 +67,8 @@ def crossover_chromosomes(parent1, parent2):
          value1 = parent1[key]
          value2 = parent2[key]
          if isinstance(value1, str) and isinstance(value2, str):
-            split1 = random.randint(0, len(value1))
-            split2 = random.randint(0, len(value2))
-            offspring[key] = value1[:split1] + value2[split2:]
+            split = random.randint(0, len(value1))
+            offspring[key] = value1[:split] + value2[split:]
             offspring[key] = (offspring[key])[:1000]
          else:
             offspring[key] = random.choice([value1, value2])
@@ -117,7 +116,7 @@ def mutate_integer(n):
 def mutate_chromosome(chromosome):
    mutated = dict(chromosome)
    if len(mutated) > 1:
-    mutation_probability = 1.0 / len(mutated)
+    mutation_probability = 1.0 / len(mutated) / 2
    else: mutation_probability = 0.5
 
    # Add gene
@@ -312,34 +311,6 @@ if __name__ == "__main__":
   evolve_match(target_file)
 
   #Tests:
-  # test_chromosome = generate_chromosome()
-  # log(f'Test Chromosome: {test_chromosome}\n')
-
-  # mutated_chromosome = mutate_chromosome(test_chromosome)
-  # log(f'Mutated Chromosome: {mutated_chromosome}')
-
-  # parent_1 = generate_chromosome()
-  # parent_2 = generate_chromosome()
-  # offspring = crossover_chromosomes(parent_1, parent_2)
-  # log(f'parent_1: {parent_1}')
-  # log(f'parent_2: {parent_2}')
-  # log(f'offspring: {offspring}')
-
-  # mutated_offspring = mutate_chromosome(offspring)
-  # log(f'Mutated Offspring: {mutated_offspring}')
-
-  # fitness = find_fitness(test_chromosome, target_file)
-  # log(f'Test Fitness: {fitness}')
-
-  # test_chromosome_1 = {'nam': 'Robt', 'age': 78}
-  # test_chromosome_2 = {'binu': 'Barukd', 'age': 21, 'city': 'Lincoln'}
-  # test_chromosome_3 = {'name': 'Robert', 'age': 21, 'city': 'Lincoln'}
-
-  # fitness_1 = find_fitness(test_chromosome_1, target_file)
-  # log(f'Test Fitness 1: {fitness_1}')
-  # fitness_2 = find_fitness(test_chromosome_2, target_file)
-  # log(f'Test Fitness 2: {fitness_2}')
-  # fitness_3 = find_fitness(test_chromosome_3, target_file)
-  # log(f'Test Fitness 3: {fitness_3}')
+ 
 
   log(f'Time: {time.perf_counter() - start_time}')
