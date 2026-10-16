@@ -205,40 +205,39 @@ def find_fitness(chromosome, target_file):
    return fitness
 
 def evolve_match(target_file):
-   # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
-   # tournament style (select random to be in tournament and take best of those)
-
-   # population size must be factor of 4
-   population_size_factor = 30
-   population_size = 4 * population_size_factor   # 120
+   population_size = 120
 
    initial_population = create_population(population_size)
 
    population = initial_population[:]
    done = False
    generation = 0
-   chromosomes_evaluated = []
+   fitness_cache = {}
 
    while not done:
       chromosome_fitness_pairs = []
       total_fitness = 0
-      # avg_fitness = 0
       best_fitness = math.inf
-      # best_individual = {}
 
       for chromosome in population:
-          if chromosome not in chromosomes_evaluated:
-             chromosomes_evaluated.append(chromosome)
           fitness = find_fitness(chromosome, target_file)
+
+          cache_key = json.dumps(chromosome, sort_keys=True)
+          if cache_key not in fitness_cache:
+            fitness_cache[cache_key] = fitness
+          
           total_fitness += fitness
+          
           if fitness == 0:
             done = True
+          
           if fitness < best_fitness:
              best_fitness = fitness
              best_individual = chromosome
+          
           chromosome_fitness_pairs.append((chromosome, fitness))
 
-      evaluated = len(chromosomes_evaluated)
+      evaluated = len(fitness_cache)
       avg_fitness = total_fitness / population_size
 
       if (time.perf_counter() - start_time) > 180:
