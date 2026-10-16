@@ -67,9 +67,13 @@ def crossover_chromosomes(parent1, parent2):
          value1 = parent1[key]
          value2 = parent2[key]
          if isinstance(value1, str) and isinstance(value2, str):
-            split = random.randint(0, len(value1))
-            offspring[key] = value1[:split] + value2[split:]
-            offspring[key] = (offspring[key])[:1000]
+            if value1 == value2:
+               offspring[key] = value1
+            else:
+               split1 = random.randint(0, len(value1))
+               split2 = random.randint(0, len(value2))
+               offspring[key] = value1[:split1] + value2[split2:]
+               offspring[key] = (offspring[key])[:1000]
          else:
             offspring[key] = random.choice([value1, value2])
       else:
@@ -262,14 +266,20 @@ def evolve_match(target_file):
       generation += 1
 
       # Chromosome crossover
-      tournament_attendees = random.choices(chromosome_fitness_pairs, k=(population_size // 2))
+      tournament_attendees = random.sample(chromosome_fitness_pairs, k=(population_size // 2))
+      tournament_attendees.sort(key=lambda x: x[1])
       chosen_parents = []
-      total_tournament_fitness = 0
-      for attendee in tournament_attendees: total_tournament_fitness += attendee[1]
-      avg_tournament_fitness = total_tournament_fitness / (population_size / 2)
-      for attendee in tournament_attendees:
-         if attendee[1] <= avg_tournament_fitness:
-            chosen_parents.append(attendee[0])
+      for attendee in tournament_attendees[:(population_size // 4)]:
+         chosen_parents.append(attendee[0])
+
+      # tournament_attendees = random.choices(chromosome_fitness_pairs, k=(population_size // 2))
+      # chosen_parents = []
+      # total_tournament_fitness = 0
+      # for attendee in tournament_attendees: total_tournament_fitness += attendee[1]
+      # avg_tournament_fitness = total_tournament_fitness / (population_size / 2)
+      # for attendee in tournament_attendees:
+      #    if attendee[1] <= avg_tournament_fitness:
+      #       chosen_parents.append(attendee[0])
 
       offsprings = []
       o = 0
