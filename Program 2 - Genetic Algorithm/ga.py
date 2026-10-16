@@ -10,7 +10,7 @@ def log(message):
     if logging:
         print(message, file=sys.stderr)
 
-def output_generation(done, generation, evaluated, avg_fitness, best_fitness):
+def output_generation(done, generation, evaluated, avg_fitness, best_fitness, best_individual):
     output = {}
     output['done'] = done
     output['generation'] = generation
@@ -18,7 +18,7 @@ def output_generation(done, generation, evaluated, avg_fitness, best_fitness):
     output['avg_fitness'] = avg_fitness
     output['best_fitness'] = best_fitness
     if (done == True) or (generation == 0):
-      output['best_individual'] = json.dumps()
+      output['best_individual'] = json.dumps(best_individual)
     print(json.dumps(output), flush=True)
 
 def random_printable_string(length):
@@ -147,19 +147,9 @@ def mutate_chromosome(chromosome):
                mutated[key] = mutate_string(value)
             else:
                mutated[key] = mutate_integer(value)
-         
-
-  #  mutated = chromosome[:]
-  #  mutation_probability = 1.0 / len(mutated)
-  #  for key in set(mutated):
-  #     if random.random() < 
+  
    return mutated
 
-# def strings_fitness(s):
-#    return
-
-# def integers_fitness(n):
-#    return
 
 def find_fitness(chromosome, target_file):
    # Only reads target file on the first call and then caches the target
@@ -211,26 +201,80 @@ def find_fitness(chromosome, target_file):
       else:
           distance = math.ceil(abs(chromosome_value - target_value) / 30)
       fitness += distance
-
-  #  for key in keys_in_both:
-  #     chromosome_value = chromosome[key]
-  #     target_value = target[key]
-  #     distance = 0
-  #     if isinstance(chromosome_value, str) and isinstance(target_value, str):
-  #        distance = Levenshtein.distance(target_value, chromosome_value)
-  #     elif isinstance(chromosome_value, str) or isinstance(target_value, str):
-  #        distance = 1000
-  #     else:
-  #        distance = abs(chromosome_value - target_value)
-  #     fitness += distance
       
    return fitness
 
-def evolve_match():
+def evolve_match(target_file):
    # roulette wheel (assign each a probability to be picked, higher the more fit they are, and select from there)
    # tournament style (select random to be in tournament and take best of those)
-   return
 
+   # population size must be factor of 4
+   population_size_factor = 30
+   population_size = 4 * population_size_factor   # 120
+
+   initial_population = create_population(population_size)
+
+   population = initial_population[:]
+   done = False
+   generation = 0
+   chromosomes_evaluated = []
+
+   while not done:
+      chromosome_fitness_pairs = []
+      total_fitness = 0
+      # avg_fitness = 0
+      best_fitness = math.inf
+      # best_individual = {}
+
+      for chromosome in population:
+          if chromosome not in chromosomes_evaluated:
+             chromosomes_evaluated.append(chromosome)
+          fitness = find_fitness(chromosome, target_file)
+          total_fitness += fitness
+          if fitness == 0:
+            done = True
+          if fitness < best_fitness:
+             best_fitness = fitness
+             best_individual = chromosome
+          chromosome_fitness_pairs.append((chromosome, fitness))
+
+      evaluated = len(chromosomes_evaluated)
+      avg_fitness = total_fitness / population_size
+
+      if (time.perf_counter() - start_time) > 180:
+        done = True
+      
+      if (generation % 50) == 0 or done:
+        output_generation(done, generation, evaluated, avg_fitness, best_fitness, best_individual)
+
+      generation += 1
+
+      # Chromosome crossover
+      tournament_attendees = random.choices(chromosome_fitness_pairs, k=((population_size * 3) // 2))
+      chosen_parents = []
+      total_tournament_fitness = 0
+      for attendee in tournament_attendees: total_tournament_fitness += attendee[1]
+      avg_tournament_fitness = total_tournament_fitness / (population_size / 2)
+      for attendee in tournament_attendees:
+         if attendee[1] <= avg_tournament_fitness:
+            chosen_parents.append(attendee[0])
+
+      offsprings = []
+      o = 0
+      while o < (population_size-1):
+         parent1 = random.choice(chosen_parents)
+         parent2 = random.choice(chosen_parents)
+         offspring = crossover_chromosomes(parent1, parent2)
+         offsprings.append(offspring)
+         o += 1
+
+      mutated_offsprings = []
+      for offspring in offsprings:
+         mutated = mutate_chromosome(offspring)
+         mutated_offsprings.append(mutated)
+
+      population = mutated_offsprings
+      population.append(best_individual)     
 
 
 if __name__ == "__main__":
@@ -252,9 +296,11 @@ if __name__ == "__main__":
   target_file = sys.argv[1]
   log(f'target_file: {target_file}')
 
+  evolve_match(target_file)
+
   #Tests:
-  test_chromosome = generate_chromosome()
-  log(f'Test Chromosome: {test_chromosome}\n')
+  # test_chromosome = generate_chromosome()
+  # log(f'Test Chromosome: {test_chromosome}\n')
 
   # mutated_chromosome = mutate_chromosome(test_chromosome)
   # log(f'Mutated Chromosome: {mutated_chromosome}')
@@ -272,15 +318,15 @@ if __name__ == "__main__":
   # fitness = find_fitness(test_chromosome, target_file)
   # log(f'Test Fitness: {fitness}')
 
-  test_chromosome_1 = {'nam': 'Robt', 'age': 78}
-  test_chromosome_2 = {'binu': 'Barukd', 'age': 21, 'city': 'Lincoln'}
-  test_chromosome_3 = {'name': 'Robert', 'age': 21, 'city': 'Lincoln'}
+  # test_chromosome_1 = {'nam': 'Robt', 'age': 78}
+  # test_chromosome_2 = {'binu': 'Barukd', 'age': 21, 'city': 'Lincoln'}
+  # test_chromosome_3 = {'name': 'Robert', 'age': 21, 'city': 'Lincoln'}
 
-  fitness_1 = find_fitness(test_chromosome_1, target_file)
-  log(f'Test Fitness 1: {fitness_1}')
-  fitness_2 = find_fitness(test_chromosome_2, target_file)
-  log(f'Test Fitness 2: {fitness_2}')
-  fitness_3 = find_fitness(test_chromosome_3, target_file)
-  log(f'Test Fitness 3: {fitness_3}')
+  # fitness_1 = find_fitness(test_chromosome_1, target_file)
+  # log(f'Test Fitness 1: {fitness_1}')
+  # fitness_2 = find_fitness(test_chromosome_2, target_file)
+  # log(f'Test Fitness 2: {fitness_2}')
+  # fitness_3 = find_fitness(test_chromosome_3, target_file)
+  # log(f'Test Fitness 3: {fitness_3}')
 
   log(f'Time: {time.perf_counter() - start_time}')
