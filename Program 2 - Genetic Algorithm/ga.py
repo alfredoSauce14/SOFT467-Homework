@@ -120,17 +120,18 @@ def mutate_integer(n):
 def mutate_chromosome(chromosome):
    mutated = dict(chromosome)
    if len(mutated) > 1:
-    mutation_probability = 1.0 / len(mutated) / 2
+    mutation_probability = 0.5 / len(mutated)
    else: mutation_probability = 0.5
+   mutation_probability = max(mutation_probability, 0.05)
 
    # Add gene
-   if random.random() < 0.1  :
+   if random.random() < 0.05  :
       new_key, new_value = generate_gene()
       if new_key not in mutated:
         mutated[new_key] = new_value
 
    # Delete gene
-   if random.random() < 0.1 and mutated:
+   if random.random() < 0.05 and mutated:
       del mutated[random.choice(list(mutated))]
 
    # Gene mutations
@@ -263,7 +264,7 @@ def evolve_match(target_file):
       evaluated = len(fitness_cache)
       avg_fitness = total_fitness / population_size
 
-      if (time.perf_counter() - start_time) > 170:
+      if (time.perf_counter() - start_time) > 120:
         done = True
       
       if (generation % 50) == 0 or done:
