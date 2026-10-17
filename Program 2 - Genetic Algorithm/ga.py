@@ -283,10 +283,15 @@ def evolve_match(target_file):
 
       offsprings = []
       o = 0
-      while o < (population_size-5):
+      while o < (population_size / 2):
          parent1 = random.choice(chosen_parents)
          parent2 = random.choice(chosen_parents)
          offspring = crossover_chromosomes(parent1, parent2)
+         offsprings.append(offspring)
+         o += 1
+
+      while o < (population_size-10):
+         offspring = random.choice(chosen_parents)
          offsprings.append(offspring)
          o += 1
 
@@ -297,7 +302,8 @@ def evolve_match(target_file):
 
       population = mutated_offsprings
       for elite in elite_chromosomes:
-        population.append(elite[0])     
+        population.append(elite[0])  
+        population.append(mutate_chromosome(elite[0])) 
 
 
 if __name__ == "__main__":
